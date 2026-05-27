@@ -1,39 +1,138 @@
-import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import api from '../api/client'
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import client from '../api/client';
 
-export default function Register() {
-  const [form, setForm] = useState({ email: '', full_name: '', password: '' })
-  const [error, setError] = useState('')
-  const navigate = useNavigate()
+export const Register: React.FC = () => {
+  const [formData, setFormData] = useState({
+    email: '',
+    username: '',
+    full_name: '',
+    password: '',
+    passwordConfirm: '',
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault(); setError('')
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    if (formData.password !== formData.passwordConfirm) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      await api.post('/auth/register', form)
-      navigate('/login')
-    } catch (err: any) { setError(err.response?.data?.detail || 'Registration failed') }
-  }
+      await client.post('/auth/register', {
+        email: formData.email,
+        username: formData.username,
+        full_name: formData.full_name,
+        password: formData.password,
+      });
+
+      navigate('/login');
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Registration failed');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-surface flex items-center justify-center">
-      <div className="card w-full max-w-sm">
-        <h1 className="font-display font-bold text-2xl text-primary mb-1">Create Account</h1>
-        <p className="text-gray-500 text-sm mb-6">Join USE Insight today</p>
-        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-        <form onSubmit={submit} className="space-y-4">
-          {(['full_name','email','password'] as const).map(f => (
-            <input key={f} type={f === 'password' ? 'password' : f === 'email' ? 'email' : 'text'}
-              placeholder={f === 'full_name' ? 'Full Name' : f === 'email' ? 'Email' : 'Password'}
-              value={form[f]} onChange={e => setForm(p => ({ ...p, [f]: e.target.value }))} required
-              className="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
-          ))}
-          <button type="submit" className="btn-primary w-full text-center">Create Account</button>
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
+        <h1 className="text-3xl font-bold text-slate-900 mb-2">Create Account</h1>
+        <p className="text-gray-600 mb-6">Join Vestora and start investing</p>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-2 rounded-lg">
+              {error}
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-semibold text-slate-900 mb-2">Email</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-slate-900 mb-2">Username</label>
+            <input
+              type="text"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-slate-900 mb-2">Full Name</label>
+            <input
+              type="text"
+              name="full_name"
+              value={formData.full_name}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-slate-900 mb-2">Password</label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-slate-900 mb-2">Confirm Password</label>
+            <input
+              type="password"
+              name="passwordConfirm"
+              value={formData.passwordConfirm}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+          >
+            {loading ? 'Creating account...' : 'Register'}
+          </button>
         </form>
-        <p className="text-center text-sm text-gray-500 mt-4">
-          Have an account? <Link to="/login" className="text-primary font-medium">Sign In</Link>
+
+        <p className="text-center text-gray-600 mt-4">
+          Already have an account?{' '}
+          <a href="/login" className="text-blue-600 hover:underline">
+            Login
+          </a>
         </p>
       </div>
     </div>
-  )
-}
+  );
+};

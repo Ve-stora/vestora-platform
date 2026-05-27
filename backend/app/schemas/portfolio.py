@@ -1,23 +1,40 @@
 from pydantic import BaseModel
+from typing import Optional, List
 from datetime import datetime
-from typing import Optional
 
-class HoldingCreate(BaseModel):
-    company_id: int
-    shares: float
-    buy_price: float
-    buy_date: Optional[datetime]
-
-class HoldingOut(BaseModel):
+class PortfolioHoldingResponse(BaseModel):
     id: int
-    company_id: int
-    shares: float
-    buy_price: float
-    buy_date: Optional[datetime]
-    class Config: from_attributes = True
+    stock_id: int
+    quantity: float
+    purchase_price: float
+    current_value: float
+    purchase_date: datetime
+    
+    class Config:
+        from_attributes = True
 
-class PortfolioOut(BaseModel):
-    id: int
+class PortfolioBase(BaseModel):
     name: str
-    holdings: list[HoldingOut] = []
-    class Config: from_attributes = True
+    description: Optional[str] = None
+
+class PortfolioCreate(PortfolioBase):
+    pass
+
+class PortfolioResponse(PortfolioBase):
+    id: int
+    user_id: int
+    total_value: float
+    total_invested: float
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class PortfolioDetailResponse(PortfolioResponse):
+    holdings: List[PortfolioHoldingResponse] = []
+
+class AddHoldingRequest(BaseModel):
+    stock_id: int
+    quantity: float
+    purchase_price: float
+    purchase_date: datetime

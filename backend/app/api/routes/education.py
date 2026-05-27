@@ -4,7 +4,6 @@ router = APIRouter()
 
 @router.get("/modules")
 def get_education_modules():
-    """Get list of educational modules"""
     return {
         "modules": [
             {
@@ -30,7 +29,6 @@ def get_education_modules():
 
 @router.get("/modules/{module_id}")
 def get_module(module_id: int):
-    """Get specific educational module"""
     return {
         "id": module_id,
         "title": "Module Title",

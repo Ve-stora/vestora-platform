@@ -1,26 +1,33 @@
+import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import Layout from './components/layout/Layout'
-import Dashboard from './pages/Dashboard'
-import Portfolio from './pages/Portfolio'
-import Education from './pages/Education'
-import AIAssistant from './pages/AIAssistant'
-import Alerts from './pages/Alerts'
-import Login from './pages/Login'
-import Register from './pages/Register'
+import { useAuthStore } from './store/useStore'
+import { Login, Register } from './pages'
+import { Dashboard } from './components/Dashboard'
+import { Portfolio } from './components/Portfolio'
+import { MarketOverview } from './components/MarketOverview'
+import { AIAssistant } from './components/AIAssistant'
 
-export default function App() {
+function App() {
+  const { isAuthenticated } = useAuthStore()
+
   return (
     <Routes>
-      <Route path="/login"    element={<Login />} />
+      <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route element={<Layout />}>
-        <Route path="/"          element={<Dashboard />} />
-        <Route path="/portfolio" element={<Portfolio />} />
-        <Route path="/education" element={<Education />} />
-        <Route path="/ai"        element={<AIAssistant />} />
-        <Route path="/alerts"    element={<Alerts />} />
-      </Route>
-      <Route path="*" element={<Navigate to="/" />} />
+      
+      {isAuthenticated ? (
+        <>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/portfolio" element={<Portfolio />} />
+          <Route path="/market" element={<MarketOverview />} />
+          <Route path="/ai" element={<AIAssistant />} />
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        </>
+      ) : (
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      )}
     </Routes>
   )
 }
+
+export default App

@@ -41,6 +41,7 @@ To make professional-grade investment tools accessible to every Ugandan — from
 ```bash
 git clone https://github.com/Ve-stora/vestora-platform.git
 cd vestora-platform
+
 2. Run with Docker (Recommended)
 docker-compose up --build
 3. Access the Application
@@ -54,9 +55,11 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 
 # Frontend (new terminal)
+
 cd frontend
 npm install
 npm run dev
+
 📁 Project Structure
 vestora-platform/
 ├── backend/              # FastAPI backend
@@ -70,6 +73,15 @@ POST /api/auth/login — User login
 GET /api/market/stocks — Ugandan market data
 POST /api/ai/assistant — AI investment assistant
 GET /api/portfolio — View portfolio
+
+
+Access the app:
+Frontend: http://localhost:5173
+Backend API: http://localhost:8000
+API Documentation: http://localhost:8000/docs
+Health Check: http://localhost:8000/health
+
+
 Screenshots
 (Add 3-4 screenshots here after you have a working demo)
 Login Screen

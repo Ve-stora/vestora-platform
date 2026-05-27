@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vestora • Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-base: #080c14;
+    --bg-panel: #0d1320;
+    --bg-card: #111827;
+    --bg-card-hover: #141e2e;
+    --border: rgba(255,255,255,0.06);
+    --border-accent: rgba(16,185,129,0.3);
+    --emerald: #10b981;
+    --emerald-dim: rgba(16,185,129,0.12);
+    --emerald-glow: rgba(16,185,129,0.08);
+    --red: #ef4444;
+    --red-dim: rgba(239,68,68,0.12);
+    --amber: #f59e0b;
+    --text-primary: #f0f4f8;
+    --text-secondary: #6b7a90;
+    --text-muted: #3d4d63;
+    --font-display: 'DM Serif Display', serif;
+    --font-body: 'DM Sans', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body {
+    font-family: var(--font-body);
+    background: var(--bg-base);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 240px;
+    min-width: 240px;
+    background: var(--bg-panel);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 28px 20px;
+    gap: 0;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 40px;
+    padding: 0 6px;
+  }
+
+  .logo-mark {
+    width: 34px;
+    height: 34px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 18px;
+    color: #fff;
+    flex-shrink: 0;
+    box-shadow: 0 0 20px rgba(16,185,129,0.3);
+  }
+
+  .logo-text {
+    font-family: var(--font-display);
+    font-size: 22px;
+    letter-spacing: -0.3px;
+    color: var(--text-primary);
+  }
+
+  nav { display: flex; flex-direction: column; gap: 4px; }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.18s ease;
+    text-decoration: none;
+    border: 1px solid transparent;
+  }
+
+  .nav-item:hover {
+    background: rgba(255,255,255,0.04);
+    color: var(--text-primary);
+  }
+
+  .nav-item.active {
+    background: var(--emerald-dim);
+    color: var(--emerald);
+    border-color: var(--border-accent);
+  }
+
+  .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+  .nav-section {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 20px 14px 8px;
+  }
+
+  .sidebar-bottom {
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  .user-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.18s;
+  }
+
+  .user-pill:hover { background: rgba(255,255,255,0.04); }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #10b981, #3b82f6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .user-info { flex: 1; min-width: 0; }
+  .user-name { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+  .user-role { font-size: 11px; color: var(--text-secondary); }
+
+  /* ── Main ── */
+  .main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 36px 40px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--bg-card) transparent;
+  }
+
+  .main::-webkit-scrollbar { width: 4px; }
+  .main::-webkit-scrollbar-track { background: transparent; }
+  .main::-webkit-scrollbar-thumb { background: var(--bg-card); border-radius: 4px; }
+
+  /* ── Header ── */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 36px;
+  }
+
+  .greeting {
+    font-family: var(--font-display);
+    font-size: 32px;
+    line-height: 1.1;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+  }
+
+  .sub-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--emerald);
+    box-shadow: 0 0 6px var(--emerald);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: var(--font-body);
+    cursor: pointer;
+    transition: all 0.18s ease;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+  }
+
+  .btn:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+
+  .btn-primary {
+    background: var(--emerald);
+    color: #fff;
+    border-color: transparent;
+  }
+
+  .btn-primary:hover { background: #059669; color: #fff; }
+
+  .btn svg { width: 14px; height: 14px; }
+
+  /* ── Portfolio Summary ── */
+  .portfolio-row {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 22px;
+    transition: border-color 0.18s, background 0.18s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card:hover {
+    border-color: rgba(255,255,255,0.1);
+    background: var(--bg-card-hover);
+  }
+
+  .stat-card.primary {
+    background: linear-gradient(135deg, #0d2218 0%, #0a1a14 100%);
+    border-color: var(--border-accent);
+  }
+
+  .stat-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+
+  .stat-value {
+    font-family: var(--font-mono);
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+    letter-spacing: -0.5px;
+  }
+
+  .stat-card.primary .stat-value { color: var(--emerald); font-size: 28px; }
+
+  .stat-change {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: 6px;
+  }
+
+  .stat-change.up { color: var(--emerald); background: var(--emerald-dim); }
+  .stat-change.down { color: var(--red); background: var(--red-dim); }
+  .stat-change.flat { color: var(--amber); background: rgba(245,158,11,0.1); }
+
+  .stat-change svg { width: 12px; height: 12px; }
+
+  /* ── Chart Panel ── */
+  .panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 26px 28px;
+    margin-bottom: 24px;
+  }
+
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  .panel-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  .panel-sub {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+  }
+
+  .tab-group {
+    display: flex;
+    gap: 2px;
+    background: var(--bg-panel);
+    border-radius: 8px;
+    padding: 3px;
+    border: 1px solid var(--border);
+  }
+
+  .tab {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.15s;
+  }
+
+  .tab.active { background: var(--bg-card); color: var(--text-primary); }
+  .tab:hover:not(.active) { color: var(--text-primary); }
+
+  /* ── Market Movers ── */
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  .badge {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: var(--emerald-dim);
+    color: var(--emerald);
+    border: 1px solid var(--border-accent);
+    letter-spacing: 0.04em;
+  }
+
+  .stocks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+  }
+
+  .stock-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stock-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    border-radius: 3px 0 0 3px;
+    background: var(--accent-color, var(--border));
+    transition: all 0.18s;
+    opacity: 0;
+  }
+
+  .stock-card:hover {
+    border-color: rgba(255,255,255,0.1);
+    background: var(--bg-card-hover);
+    transform: translateY(-1px);
+  }
+
+  .stock-card:hover::before { opacity: 1; }
+
+  .stock-card.positive { --accent-color: var(--emerald); }
+  .stock-card.negative { --accent-color: var(--red); }
+  .stock-card.neutral { --accent-color: var(--amber); }
+
+  .stock-symbol {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 3px;
+    letter-spacing: 0.02em;
+  }
+
+  .stock-name {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  .stock-price {
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-primary);
+    text-align: right;
+    margin-bottom: 4px;
+  }
+
+  .stock-change {
+    font-size: 12px;
+    font-weight: 500;
+    text-align: right;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    justify-content: flex-end;
+  }
+
+  .up { color: var(--emerald); }
+  .down { color: var(--red); }
+  .flat { color: var(--amber); }
+
+  /* ── Mini sparkline placeholder ── */
+  .sparkline {
+    width: 60px;
+    height: 28px;
+    margin: 0 16px;
+    flex-shrink: 0;
+  }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-thumb { background: var(--bg-card); border-radius: 4px; }
+
+  /* ── Subtle animated entrance ── */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(8px);
+    animation: fadeIn 0.4s ease forwards;
+  }
+
+  @keyframes fadeIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-in:nth-child(1) { animation-delay: 0.05s; }
+  .fade-in:nth-child(2) { animation-delay: 0.1s; }
+  .fade-in:nth-child(3) { animation-delay: 0.15s; }
+  .fade-in:nth-child(4) { animation-delay: 0.2s; }
+  .fade-in:nth-child(5) { animation-delay: 0.25s; }
+</style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ── -->
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-mark">V</div>
+    <span class="logo-text">Vestora</span>
+  </div>
+
+  <div class="nav-section">Main</div>
+  <nav>
+    <a href="#" class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </a>
+    <a href="#" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73L13 2.27a2 2 0 0 0-2 0L4 6.27A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73L11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+      Portfolio
+    </a>
+    <a href="#" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Market
+    </a>
+    <a href="#" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      Watchlist
+    </a>
+  </nav>
+
+  <div class="nav-section">Tools</div>
+  <nav>
+    <a href="#" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a8 8 0 0 1 8 8c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 8-8z"/><circle cx="12" cy="10" r="3"/></svg>
+      AI Advisor
+    </a>
+    <a href="#" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+      Analytics
+    </a>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <div class="user-pill">
+      <div class="avatar">K</div>
+      <div class="user-info">
+        <div class="user-name">Keith</div>
+        <div class="user-role">Pro Investor</div>
+      </div>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.8"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+    </div>
+  </div>
+</div>
+
+<!-- ── MAIN ── -->
+<div class="main">
+
+  <!-- Header -->
+  <div class="page-header fade-in">
+    <div>
+      <div class="greeting">Good evening, Keith.</div>
+      <div class="sub-line">
+        <div class="status-dot"></div>
+        Uganda Securities Exchange &nbsp;·&nbsp; Market Open &nbsp;·&nbsp; Wed 27 May 2026
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v2.5L13 14v6l-2-2v-4L4 6.5V4z"/></svg>
+        Filter
+      </button>
+      <button class="btn btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Trade
+      </button>
+    </div>
+  </div>
+
+  <!-- Portfolio Stats -->
+  <div class="portfolio-row">
+    <div class="stat-card primary fade-in">
+      <div class="stat-label">Total Portfolio Value</div>
+      <div class="stat-value">UGX 84,230,500</div>
+      <span class="stat-change up">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+        +8.4% this month
+      </span>
+    </div>
+    <div class="stat-card fade-in">
+      <div class="stat-label">Day's Gain</div>
+      <div class="stat-value">+623,800</div>
+      <span class="stat-change up">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+        +0.75%
+      </span>
+    </div>
+    <div class="stat-card fade-in">
+      <div class="stat-label">Open Positions</div>
+      <div class="stat-value">12</div>
+      <span class="stat-change flat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        No change
+      </span>
+    </div>
+    <div class="stat-card fade-in">
+      <div class="stat-label">Alerts Active</div>
+      <div class="stat-value">3</div>
+      <span class="stat-change up">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+        2 triggered today
+      </span>
+    </div>
+  </div>
+
+  <!-- Chart Panel -->
+  <div class="panel fade-in">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">14-Day Price Forecast</div>
+        <div class="panel-sub">AI-generated projection based on USE market data</div>
+      </div>
+      <div class="tab-group">
+        <span class="tab active">14D</span>
+        <span class="tab">1M</span>
+        <span class="tab">3M</span>
+        <span class="tab">1Y</span>
+      </div>
+    </div>
+    <canvas id="forecastChart" height="90"></canvas>
+  </div>
+
+  <!-- Market Movers -->
+  <div class="section-header">
+    <span class="section-title">Live Market Movers</span>
+    <span class="badge">USE Live</span>
+  </div>
+  <div class="stocks-grid" id="stocks"></div>
+
+</div>
+
+<script>
+const stocks = [
+  { symbol: "KCB",    name: "KCB Group",          price: "1,944.09", change: "+1.53",  type: "positive" },
+  { symbol: "CENT",   name: "Centum Investment",   price: "400.47",   change: "+7.25",  type: "positive" },
+  { symbol: "AIRTEL", name: "Airtel Uganda",       price: "149.48",   change: "+3.09",  type: "positive" },
+  { symbol: "MTNU",   name: "MTN Uganda",          price: "425.00",   change: "0.00",   type: "neutral"  },
+  { symbol: "DFCU",   name: "DFCU Bank",           price: "331.00",   change: "-0.45",  type: "negative" },
+  { symbol: "UMEME",  name: "Umeme Ltd",           price: "290.50",   change: "+2.10",  type: "positive" },
+];
+
+const icons = { positive: "▲", negative: "▼", neutral: "—" };
+
+const container = document.getElementById('stocks');
+stocks.forEach((s, i) => {
+  const card = document.createElement('div');
+  card.className = `stock-card ${s.type} fade-in`;
+  card.style.animationDelay = `${0.05 * i + 0.3}s`;
+
+  const sparkPoints = generateSparkline(s.type);
+  const svgSparkline = buildSparkSVG(sparkPoints, s.type);
+
+  card.innerHTML = `
+    <div>
+      <div class="stock-symbol">${s.symbol}</div>
+      <div class="stock-name">${s.name}</div>
+    </div>
+    ${svgSparkline}
+    <div>
+      <div class="stock-price">${s.price}</div>
+      <div class="stock-change ${s.type}">
+        ${icons[s.type]} ${s.change}%
+      </div>
+    </div>
+  `;
+  container.appendChild(card);
+});
+
+function generateSparkline(type) {
+  const base = 50;
+  let pts = [base];
+  for (let i = 1; i < 10; i++) {
+    const drift = type === 'positive' ? 1.5 : type === 'negative' ? -1 : 0;
+    pts.push(pts[i-1] + (Math.random() - 0.45 + drift * 0.1) * 8);
+  }
+  return pts;
+}
+
+function buildSparkSVG(pts, type) {
+  const w = 60, h = 28, pad = 3;
+  const min = Math.min(...pts), max = Math.max(...pts);
+  const rx = i => pad + (i / (pts.length - 1)) * (w - pad * 2);
+  const ry = v => h - pad - ((v - min) / (max - min + 0.001)) * (h - pad * 2);
+  const path = pts.map((v, i) => `${i === 0 ? 'M' : 'L'}${rx(i).toFixed(1)},${ry(v).toFixed(1)}`).join(' ');
+  const color = type === 'positive' ? '#10b981' : type === 'negative' ? '#ef4444' : '#f59e0b';
+  return `<svg class="sparkline" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">
+    <path d="${path}" fill="none" stroke="${color}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+  </svg>`;
+}
+
+// Chart
+const labels = ['May 27','28','29','30','31','Jun 1','2','3','4','5','6','7','8','9'];
+const prices  = [1420, 1438, 1415, 1452, 1468, 1490, 1478, 1510, 1495, 1532, 1518, 1545, 1561, 1580];
+
+const ctx = document.getElementById('forecastChart').getContext('2d');
+
+const gradient = ctx.createLinearGradient(0, 0, 0, 240);
+gradient.addColorStop(0,   'rgba(16,185,129,0.18)');
+gradient.addColorStop(0.6, 'rgba(16,185,129,0.04)');
+gradient.addColorStop(1,   'rgba(16,185,129,0)');
+
+new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [{
+      label: 'Forecast',
+      data: prices,
+      borderColor: '#10b981',
+      borderWidth: 2,
+      pointRadius: 0,
+      pointHoverRadius: 5,
+      pointHoverBackgroundColor: '#10b981',
+      pointHoverBorderColor: '#fff',
+      pointHoverBorderWidth: 2,
+      backgroundColor: gradient,
+      fill: true,
+      tension: 0.45
+    }, {
+      label: 'Confidence Band',
+      data: prices.map((p, i) => i < 7 ? null : p + 30),
+      borderColor: 'rgba(16,185,129,0.2)',
+      borderWidth: 1,
+      borderDash: [4, 4],
+      pointRadius: 0,
+      fill: false,
+      tension: 0.45
+    }, {
+      label: 'Confidence Band Low',
+      data: prices.map((p, i) => i < 7 ? null : p - 30),
+      borderColor: 'rgba(16,185,129,0.2)',
+      borderWidth: 1,
+      borderDash: [4, 4],
+      pointRadius: 0,
+      fill: false,
+      tension: 0.45
+    }]
+  },
+  options: {
+    responsive: true,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#111827',
+        borderColor: 'rgba(255,255,255,0.08)',
+        borderWidth: 1,
+        titleColor: '#6b7a90',
+        bodyColor: '#f0f4f8',
+        titleFont: { family: 'DM Sans', size: 11 },
+        bodyFont: { family: 'JetBrains Mono', size: 13 },
+        padding: 12,
+        callbacks: {
+          label: ctx => ctx.datasetIndex === 0 ? `  UGX ${ctx.parsed.y.toLocaleString()}` : null
+        }
+      }
+    },
+    scales: {
+      x: {
+        grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false },
+        ticks: {
+          color: '#3d4d63',
+          font: { family: 'DM Sans', size: 11 },
+          maxRotation: 0,
+          maxTicksLimit: 7
+        },
+        border: { display: false }
+      },
+      y: {
+        grid: { color: 'rgba(255,255,255,0.04)', drawBorder: false },
+        ticks: {
+          color: '#3d4d63',
+          font: { family: 'JetBrains Mono', size: 11 },
+          callback: v => 'UGX ' + v.toLocaleString()
+        },
+        border: { display: false }
+      }
+    }
+  }
+});
+
+// Tab switching animation
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

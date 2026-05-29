@@ -2,25 +2,19 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 
-class AlertBase(BaseModel):
+class AlertCreate(BaseModel):
+    user_id: int
     stock_id: int
     alert_type: str
-    target_value: Optional[float] = None
-    message: Optional[str] = None
+    threshold_value: float
 
-class AlertCreate(AlertBase):
-    pass
-
-class AlertResponse(AlertBase):
+class AlertResponse(BaseModel):
     id: int
     user_id: int
-    is_active: bool
+    stock_id: int
+    alert_type: str
+    threshold_value: float
     created_at: datetime
-    triggered_at: Optional[datetime]
-    
+
     class Config:
         from_attributes = True
-
-class AlertUpdate(BaseModel):
-    target_value: Optional[float] = None
-    is_active: Optional[bool] = None

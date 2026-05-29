@@ -1,4 +1,17 @@
-venv/
+# Dependencies
+node_modules/
+frontend/node_modules/
+backend/.venv/
+*.env
+
+# Build outputs
+dist/
+build/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Runtime
 __pycache__/
 *.pyc
-.env

@@ -2,20 +2,11 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 
-class StockBase(BaseModel):
+class StockCreate(BaseModel):
     symbol: str
     name: str
-    price: float
-
-class StockCreate(StockBase):
-    sector: Optional[str] = None
-    opening_price: Optional[float] = None
-    high_price: Optional[float] = None
-    low_price: Optional[float] = None
-
-class StockResponse(StockBase):
-    id: int
     sector: Optional[str]
+    price: float
     opening_price: Optional[float]
     high_price: Optional[float]
     low_price: Optional[float]
@@ -23,8 +14,17 @@ class StockResponse(StockBase):
     market_cap: Optional[float]
     pe_ratio: Optional[float]
     dividend_yield: Optional[float]
-    last_updated: datetime
-    
+
+class StockResponse(BaseModel):
+    id: int
+    symbol: str
+    name: str
+    sector: Optional[str]
+    price: float
+    pe_ratio: Optional[float]
+    dividend_yield: Optional[float]
+    created_at: datetime
+
     class Config:
         from_attributes = True
 

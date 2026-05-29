@@ -1,68 +1,56 @@
-import { create } from 'zustand';
-import { User, Stock, Portfolio, Alert } from '../types';
+import { create } from 'zustand'
 
-interface AuthState {
-  user: User | null;
-  token: string | null;
-  isAuthenticated: boolean;
-  setUser: (user: User | null) => void;
-  setToken: (token: string | null) => void;
-  logout: () => void;
+interface AuthStore {
+  isAuthenticated: boolean
+  user: any
+  token: string | null
+  login: (email: string, password: string) => Promise<void>
+  register: (email: string, username: string, password: string, fullName: string) => Promise<void>
+  logout: () => void
 }
 
-interface MarketState {
-  stocks: Stock[];
-  selectedStock: Stock | null;
-  setStocks: (stocks: Stock[]) => void;
-  setSelectedStock: (stock: Stock | null) => void;
-}
+export const useAuthStore = create<AuthStore>((set) => ({
+  isAuthenticated: !!localStorage.getItem('token'),
+  user: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')!) : null,
+  token: localStorage.getItem('token'),
 
-interface PortfolioState {
-  portfolios: Portfolio[];
-  selectedPortfolio: Portfolio | null;
-  setPortfolios: (portfolios: Portfolio[]) => void;
-  setSelectedPortfolio: (portfolio: Portfolio | null) => void;
-}
-
-interface AlertState {
-  alerts: Alert[];
-  setAlerts: (alerts: Alert[]) => void;
-}
-
-export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
-  token: localStorage.getItem('access_token'),
-  isAuthenticated: !!localStorage.getItem('access_token'),
-  setUser: (user) => set({ user }),
-  setToken: (token) => {
-    if (token) {
-      localStorage.setItem('access_token', token);
-    } else {
-      localStorage.removeItem('access_token');
+  login: async (email: string, password: string) => {
+    try {
+      const response = await fetch('http://localhost:8000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      })
+      const data = await response.json()
+      localStorage.setItem('token', data.access_token)
+      localStorage.setItem('user', JSON.stringify({ email }))
+      set({ isAuthenticated: true, token: data.access_token, user: { email } })
+    } catch (error) {
+      console.error('Login failed:', error)
+      throw error
     }
-    set({ token, isAuthenticated: !!token });
   },
+
+  register: async (email: string, username: string, password: string, fullName: string) => {
+    try {
+      const response = await fetch('http://localhost:8000/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, username, password, full_name: fullName })
+      })
+      const data = await response.json()
+      localStorage.setItem('token', data.access_token || 'temp-token')
+      localStorage.setItem('user', JSON.stringify(data))
+      set({ isAuthenticated: true, user: data })
+    } catch (error) {
+      console.error('Registration failed:', error)
+      throw error
+    }
+  },
+
   logout: () => {
-    localStorage.removeItem('access_token');
-    set({ user: null, token: null, isAuthenticated: false });
-  },
-}));
-
-export const useMarketStore = create<MarketState>((set) => ({
-  stocks: [],
-  selectedStock: null,
-  setStocks: (stocks) => set({ stocks }),
-  setSelectedStock: (stock) => set({ selectedStock: stock }),
-}));
-
-export const usePortfolioStore = create<PortfolioState>((set) => ({
-  portfolios: [],
-  selectedPortfolio: null,
-  setPortfolios: (portfolios) => set({ portfolios }),
-  setSelectedPortfolio: (portfolio) => set({ selectedPortfolio: portfolio }),
-}));
-
-export const useAlertStore = create<AlertState>((set) => ({
-  alerts: [],
-  setAlerts: (alerts) => set({ alerts }),
-}));
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    set({ isAuthenticated: false, user: null, token: null })
+  }
+}))
